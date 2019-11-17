@@ -415,12 +415,6 @@ class HomeFragment : Fragment() {
                     }
                 }
             }
-            is TabAction.Share -> {
-                invokePendingDeleteJobs()
-                sessionManager.findSessionById(action.sessionId)?.let { session ->
-                    share(listOf(ShareData(url = session.url)))
-                }
-            }
             is TabAction.PauseMedia -> {
                 MediaStateMachine.state.pauseIfPlaying()
             }
