@@ -178,6 +178,7 @@ class HomeFragment : Fragment() {
                 navController = findNavController(),
                 homeLayout = view.homeLayout,
                 browsingModeManager = browsingModeManager,
+                lifecycleScope = viewLifecycleOwner.lifecycleScope,
                 closeTab = ::closeTab,
                 closeAllTabs = ::closeAllTabs,
                 getListOfTabs = ::getListOfTabs,
@@ -513,15 +514,6 @@ class HomeFragment : Fragment() {
                     sessionControlComponent.view.smoothScrollToPosition(0)
                 }
                 components.analytics.metrics.track(Event.CollectionAllTabsRestored)
-            }
-            is CollectionAction.RemoveTab -> {
-                viewLifecycleOwner.lifecycleScope.launch(IO) {
-                    requireComponents.core.tabCollectionStorage.removeTabFromCollection(
-                        action.collection,
-                        action.tab
-                    )
-                }
-                requireComponents.analytics.metrics.track(Event.CollectionTabRemoved)
             }
         }
     }
