@@ -74,7 +74,6 @@ import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ext.sessionsOfType
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.ext.toTab
-import org.mozilla.fenix.home.sessioncontrol.CollectionAction
 import org.mozilla.fenix.home.sessioncontrol.DefaultSessionControlController
 import org.mozilla.fenix.home.sessioncontrol.SessionControlInteractor
 import org.mozilla.fenix.home.sessioncontrol.SessionControlAction
@@ -85,7 +84,6 @@ import org.mozilla.fenix.home.sessioncontrol.SessionControlViewModel
 import org.mozilla.fenix.home.sessioncontrol.Tab
 import org.mozilla.fenix.home.sessioncontrol.viewholders.CollectionViewHolder
 import org.mozilla.fenix.mvi.ActionBusFactory
-import org.mozilla.fenix.mvi.getAutoDisposeObservable
 import org.mozilla.fenix.mvi.getManagedEmitter
 import org.mozilla.fenix.onboarding.FenixOnboarding
 import org.mozilla.fenix.settings.SupportUtils
@@ -324,13 +322,6 @@ class HomeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
-        getAutoDisposeObservable<SessionControlAction>()
-            .subscribe {
-                when (it) {
-                    is SessionControlAction.Collection -> handleCollectionAction(it.action)
-                }
-            }
-
         val context = requireContext()
         val components = context.components
 
@@ -446,20 +437,6 @@ class HomeFragment : Fragment() {
             }
             create()
         }.show()
-    }
-
-    @SuppressWarnings("LongMethod")
-    private fun handleCollectionAction(action: CollectionAction) {
-        when (action) {
-            is CollectionAction.Expand -> {
-                getManagedEmitter<SessionControlChange>()
-                    .onNext(SessionControlChange.ExpansionChange(action.collection, true))
-            }
-            is CollectionAction.Collapse -> {
-                getManagedEmitter<SessionControlChange>()
-                    .onNext(SessionControlChange.ExpansionChange(action.collection, false))
-            }
-        }
     }
 
     override fun onPause() {
