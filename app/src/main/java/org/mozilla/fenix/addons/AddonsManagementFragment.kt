@@ -9,12 +9,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_add_ons_management.*
 import kotlinx.android.synthetic.main.fragment_add_ons_management.view.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mozilla.components.feature.addons.Addon
 import mozilla.components.feature.addons.AddonManagerException
@@ -77,11 +79,11 @@ class AddonsManagementFragment : Fragment(), AddonsManagerAdapterDelegate {
     private fun bindRecyclerView(view: View) {
         val recyclerView = view.add_ons_list
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        scope.launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val addons = requireContext().components.addonManager.getAddons()
 
-                scope.launch(Dispatchers.Main) {
+                lifecycleScope.launch(Dispatchers.Main) {
                     val adapter = AddonsManagerAdapter(
                         requireContext().components.addonCollectionProvider,
                         this@AddonsManagementFragment,
@@ -90,7 +92,7 @@ class AddonsManagementFragment : Fragment(), AddonsManagerAdapterDelegate {
                     recyclerView.adapter = adapter
                 }
             } catch (e: AddonManagerException) {
-                scope.launch(Dispatchers.Main) {
+                lifecycleScope.launch(Dispatchers.Main) {
                     showSnackBar(view, getString(R.string.mozac_feature_addons_failed_to_query_add_ons))
                 }
             }

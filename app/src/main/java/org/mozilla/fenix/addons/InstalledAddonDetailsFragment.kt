@@ -10,9 +10,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Switch
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import kotlinx.android.synthetic.main.fragment_installed_add_on_details.view.*
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import mozilla.components.feature.addons.Addon
 import mozilla.components.feature.addons.ui.translate
 import org.mozilla.fenix.R
@@ -59,15 +65,20 @@ class InstalledAddonDetailsFragment : Fragment() {
         switch.setState(addon.isEnabled())
         switch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                requireContext().components.addonManager.enableAddon(
+                enable(
                     addon,
                     onSuccess = {
-                        switch.setState(true)
-                        this.addon = it
-                        showSnackBar(
-                            view,
-                            getString(R.string.mozac_feature_addons_successfully_enabled, addon.translatedName)
-                        )
+                        context?.let { context ->
+                            switch.setState(true)
+                            this@InstalledAddonDetailsFragment.addon = it
+                            showSnackBar(
+                                view,
+                                context.getString(
+                                    R.string.mozac_feature_addons_successfully_enabled,
+                                    addon.translatedName
+                                )
+                            )
+                        }
                     },
                     onError = {
                         showSnackBar(
@@ -94,6 +105,20 @@ class InstalledAddonDetailsFragment : Fragment() {
                         )
                     }
                 )
+            }
+        }
+    }
+
+    @Suppress("UNUSED_PARAMETER")
+    private fun enable(
+        addon: Addon,
+        onSuccess: ((Addon) -> Unit) = { },
+        onError: ((Throwable) -> Unit) = { }
+    ) {
+        MainScope().launch(IO) {
+            delay(10000)
+            MainScope().launch(Main) {
+                onSuccess(addon)
             }
         }
     }
