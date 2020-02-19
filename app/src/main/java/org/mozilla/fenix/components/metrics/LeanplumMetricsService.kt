@@ -10,6 +10,9 @@ import com.leanplum.Leanplum
 import com.leanplum.LeanplumActivityHelper
 import com.leanplum.annotations.Parser
 import com.leanplum.internal.LeanplumInternal
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import mozilla.components.support.locale.LocaleManager
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.ext.settings
@@ -58,46 +61,52 @@ class LeanplumMetricsService(private val application: Application) : MetricsServ
     private val token = Token(LeanplumId, LeanplumToken)
 
     override fun start() {
-        if (!application.settings().isMarketingTelemetryEnabled) return
+        MainScope().launch(Dispatchers.IO) {
+            if (!application.settings().isMarketingTelemetryEnabled) return@launch
 
-        val applicationSetLocale = LocaleManager.getCurrentLocale(application)
-        val currentLocale = when (applicationSetLocale != null) {
-            true -> applicationSetLocale.isO3Language
-            false -> Locale.getDefault().isO3Language
-        }
-        if (!isLeanplumEnabled(currentLocale)) {
-            Log.i(LOGTAG, "Leanplum is not available for this locale: $currentLocale")
-            return
-        }
-
-        when (token.type) {
-            Token.Type.Production -> Leanplum.setAppIdForProductionMode(token.id, token.token)
-            Token.Type.Development -> Leanplum.setAppIdForDevelopmentMode(token.id, token.token)
-            Token.Type.Invalid -> {
-                Log.i(LOGTAG, "Invalid or missing Leanplum token")
-                return
+            val applicationSetLocale = LocaleManager.getCurrentLocale(application)
+            val currentLocale = when (applicationSetLocale != null) {
+                true -> applicationSetLocale.isO3Language
+                false -> Locale.getDefault().isO3Language
             }
+            if (!isLeanplumEnabled(currentLocale)) {
+                Log.i(LOGTAG, "Leanplum is not available for this locale: $currentLocale")
+                return@launch
+            }
+
+            when (token.type) {
+                Token.Type.Production -> Leanplum.setAppIdForProductionMode(token.id, token.token)
+                Token.Type.Development -> Leanplum.setAppIdForDevelopmentMode(token.id, token.token)
+                Token.Type.Invalid -> {
+                    Log.i(LOGTAG, "Invalid or missing Leanplum token")
+                    return@launch
+                }
+            }
+
+            Leanplum.setIsTestModeEnabled(false)
+            Leanplum.setApplicationContext(application)
+            Leanplum.setDeviceId(randomUUID().toString())
+            Parser.parseVariables(application)
+
+            LeanplumActivityHelper.enableLifecycleCallbacks(application)
+
+            val installedApps = MozillaProductDetector.getInstalledMozillaProducts(application)
+
+            Leanplum.start(application, hashMapOf(
+                "default_browser" to
+                        MozillaProductDetector.getMozillaBrowserDefault(application).orEmpty(),
+                "fennec_installed" to
+                        installedApps.contains(MozillaProductDetector.MozillaProducts.FIREFOX.productName),
+                "focus_installed"
+                        to installedApps.contains(MozillaProductDetector.MozillaProducts.FOCUS.productName),
+                "klar_installed"
+                        to installedApps.contains(MozillaProductDetector.MozillaProducts.KLAR.productName),
+                "fxa_signed_in" to application.settings().fxaSignedIn,
+                "fxa_has_synced_items" to application.settings().fxaHasSyncedItems,
+                "search_widget_installed" to application.settings().searchWidgetInstalled,
+                "fenix" to true
+            ))
         }
-
-        Leanplum.setIsTestModeEnabled(false)
-        Leanplum.setApplicationContext(application)
-        Leanplum.setDeviceId(randomUUID().toString())
-        Parser.parseVariables(application)
-
-        LeanplumActivityHelper.enableLifecycleCallbacks(application)
-
-        val installedApps = MozillaProductDetector.getInstalledMozillaProducts(application)
-
-        Leanplum.start(application, hashMapOf(
-            "default_browser" to MozillaProductDetector.getMozillaBrowserDefault(application).orEmpty(),
-            "fennec_installed" to installedApps.contains(MozillaProductDetector.MozillaProducts.FIREFOX.productName),
-            "focus_installed" to installedApps.contains(MozillaProductDetector.MozillaProducts.FOCUS.productName),
-            "klar_installed" to installedApps.contains(MozillaProductDetector.MozillaProducts.KLAR.productName),
-            "fxa_signed_in" to application.settings().fxaSignedIn,
-            "fxa_has_synced_items" to application.settings().fxaHasSyncedItems,
-            "search_widget_installed" to application.settings().searchWidgetInstalled,
-            "fenix" to true
-        ))
     }
 
     override fun stop() {
