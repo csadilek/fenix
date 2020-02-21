@@ -11,8 +11,10 @@ import com.leanplum.LeanplumActivityHelper
 import com.leanplum.annotations.Parser
 import com.leanplum.internal.LeanplumInternal
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import mozilla.components.support.locale.LocaleManager
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.ext.settings
@@ -61,9 +63,13 @@ class LeanplumMetricsService(private val application: Application) : MetricsServ
     private val token = Token(LeanplumId, LeanplumToken)
 
     override fun start() {
-        MainScope().launch(Dispatchers.IO) {
-            if (!application.settings().isMarketingTelemetryEnabled) return@launch
+        if (!application.settings().isMarketingTelemetryEnabled) return
+        Leanplum.setIsTestModeEnabled(false)
+        Leanplum.setApplicationContext(application)
+        Leanplum.setDeviceId(randomUUID().toString())
+        Parser.parseVariables(application)
 
+        MainScope().launch(Dispatchers.IO) {
             val applicationSetLocale = LocaleManager.getCurrentLocale(application)
             val currentLocale = when (applicationSetLocale != null) {
                 true -> applicationSetLocale.isO3Language
@@ -83,11 +89,6 @@ class LeanplumMetricsService(private val application: Application) : MetricsServ
                 }
             }
 
-            Leanplum.setIsTestModeEnabled(false)
-            Leanplum.setApplicationContext(application)
-            Leanplum.setDeviceId(randomUUID().toString())
-            Parser.parseVariables(application)
-
             LeanplumActivityHelper.enableLifecycleCallbacks(application)
 
             val installedApps = MozillaProductDetector.getInstalledMozillaProducts(application)
@@ -106,6 +107,13 @@ class LeanplumMetricsService(private val application: Application) : MetricsServ
                 "search_widget_installed" to application.settings().searchWidgetInstalled,
                 "fenix" to true
             ))
+
+            withContext(Main) {
+                LeanplumInternal.setCalledStart(true)
+                LeanplumInternal.setHasStarted(true)
+                // Verify that this is currently set to true also
+                LeanplumInternal.setStartedInBackground(true)
+            }
         }
     }
 
