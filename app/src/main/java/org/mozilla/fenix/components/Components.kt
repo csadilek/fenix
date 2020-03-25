@@ -69,7 +69,11 @@ class Components(private val context: Context) {
     }
 
     val addonCollectionProvider by lazy {
-        AddonCollectionProvider(context, core.client, maxCacheAgeInMinutes = DAY_IN_MINUTES)
+        AddonCollectionProvider(
+            context,
+            core.client,
+            collectionName = "16f6e5d9a40448b8955db57ced6d75",
+            maxCacheAgeInMinutes = DAY_IN_MINUTES)
     }
 
     @Suppress("MagicNumber")
