@@ -12,10 +12,14 @@ import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.support.test.mock
 import org.junit.Assert.assertEquals
 import org.junit.Test
+<<<<<<< HEAD
 import org.junit.runner.RunWith
 import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
 
 @RunWith(FenixRobolectricTestRunner::class)
+=======
+
+>>>>>>> bea8eb3da... No issue: Show article/page url instead of reader extension url
 class SessionTest {
 
     @Test
