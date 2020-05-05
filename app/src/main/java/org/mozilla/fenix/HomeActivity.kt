@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.AttributeSet
+import android.view.LayoutInflater
 import android.view.View
 import androidx.annotation.CallSuper
 import androidx.annotation.IdRes
@@ -77,6 +78,7 @@ import org.mozilla.fenix.utils.RunWhenReadyQueue
 import mozilla.components.concept.tabstray.TabsTray
 import mozilla.components.browser.tabstray.TabsAdapter
 import mozilla.components.browser.tabstray.BrowserTabsTray
+import mozilla.components.browser.tabstray.DefaultTabViewHolder
 import org.mozilla.fenix.tabtray.TabTrayFragmentDirections
 
 /**
@@ -218,7 +220,10 @@ open class HomeActivity : LocaleAwareAppCompatActivity() {
         }.asView()
         TabsTray::class.java.name -> {
             val layout = LinearLayoutManager(context)
-            val adapter = TabsAdapter(layoutId = R.layout.tab_tray_item)
+            val adapter = TabsAdapter { viewGroup, tabsTray ->
+                val view = LayoutInflater.from(context).inflate(R.layout.tab_tray_item, viewGroup, false)
+                DefaultTabViewHolder(view, tabsTray)
+            }
             BrowserTabsTray(context, attrs, tabsAdapter = adapter, layout = layout)
         }
         else -> super.onCreateView(parent, name, context, attrs)
