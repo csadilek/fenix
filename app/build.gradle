@@ -129,7 +129,7 @@ android {
             resources.srcDirs += ['src/androidTest/resources']
         }
         debug {
-            java.srcDirs = ['src/geckoNightly/java']
+            java.srcDirs = ['src/geckoBeta/java']
         }
         nightly {
             java.srcDirs = ['src/geckoNightly/java']
@@ -340,7 +340,7 @@ dependencies {
     jnaForTest Deps.jna
     testImplementation files(configurations.jnaForTest.copyRecursive().files)
 
-    debugImplementation Deps.mozilla_browser_engine_gecko_nightly
+    debugImplementation Deps.mozilla_browser_engine_gecko_beta
 
     nightlyImplementation Deps.mozilla_browser_engine_gecko_nightly
     betaImplementation Deps.mozilla_browser_engine_gecko_beta
