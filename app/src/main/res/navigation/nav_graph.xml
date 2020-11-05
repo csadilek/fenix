@@ -87,6 +87,9 @@
         android:id="@+id/action_global_addonsManagementFragment"
         app:destination="@id/addons_management_graph" />
     <action
+        android:id="@+id/action_global_installAddonManagementFragment"
+        app:destination="@id/addonsManagementInstallationFragment" />
+    <action
         android:id="@+id/action_global_trackingProtectionFragment"
         app:destination="@id/trackingProtectionFragment" />
     <action
@@ -810,6 +813,16 @@
             app:nullable="true" />
     </dialog>
 
+    <fragment
+        android:id="@+id/addonsManagementInstallationFragment"
+        android:name="org.mozilla.fenix.addons.AddonsManagementFragment"
+        tools:layout="@layout/fragment_add_ons_management">
+        <argument
+                android:name="installAddonId"
+                app:argType="string"
+                app:nullable="true" />
+    </fragment>
+
     <navigation
         android:id="@+id/site_permissions_exceptions_graph"
         app:startDestination="@id/sitePermissionsExceptionsFragment">
@@ -866,6 +879,10 @@
             <action
                 android:id="@+id/action_addonsManagementFragment_to_notYetSupportedAddonFragment"
                 app:destination="@id/notYetSupportedAddonFragment" />
+            <argument
+                android:name="installAddonId"
+                app:argType="string"
+                app:nullable="true" />
         </fragment>
         <fragment
             android:id="@+id/installedAddonDetailsFragment"

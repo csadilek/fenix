@@ -7,6 +7,7 @@ package org.mozilla.fenix
 import android.content.Context
 import android.net.ConnectivityManager
 import androidx.core.content.getSystemService
+import androidx.navigation.NavController
 import mozilla.components.browser.errorpages.ErrorPages
 import mozilla.components.browser.errorpages.ErrorType
 import mozilla.components.concept.engine.EngineSession
@@ -15,7 +16,13 @@ import org.mozilla.fenix.components.metrics.Event
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.isOnline
 
-class AppRequestInterceptor(private val context: Context) : RequestInterceptor {
+class AppRequestInterceptor(
+    private val context: Context
+) : RequestInterceptor {
+
+    // TODO important: use WeakReference
+    var navController: NavController? = null
+
     override fun onLoadRequest(
         engineSession: EngineSession,
         uri: String,
@@ -26,6 +33,13 @@ class AppRequestInterceptor(private val context: Context) : RequestInterceptor {
         isDirectNavigation: Boolean,
         isSubframeRequest: Boolean
     ): RequestInterceptor.InterceptionResponse? {
+
+        // TODO
+        if (uri == "https://mozilla.org/") {
+            navController?.navigate(NavGraphDirections.actionGlobalInstallAddonManagementFragment("csa"))
+            return RequestInterceptor.InterceptionResponse.Deny
+        }
+
         return context.components.services.appLinksInterceptor
             .onLoadRequest(
                 engineSession,

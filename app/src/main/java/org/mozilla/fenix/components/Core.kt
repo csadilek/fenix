@@ -93,7 +93,7 @@ class Core(
      */
     val engine: Engine by lazy {
         val defaultSettings = DefaultSettings(
-            requestInterceptor = AppRequestInterceptor(context),
+            requestInterceptor = requestInterceptor,
             remoteDebuggingEnabled = context.settings().isRemoteDebuggingEnabled &&
                     Build.VERSION.SDK_INT >= Build.VERSION_CODES.M,
             testingModeEnabled = false,
@@ -132,6 +132,10 @@ class Core(
                 WebCompatReporterFeature.install(it, "fenix")
             }
         }
+    }
+
+    val requestInterceptor: AppRequestInterceptor by lazy {
+        AppRequestInterceptor(context)
     }
 
     /**

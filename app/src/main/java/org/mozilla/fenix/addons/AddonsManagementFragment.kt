@@ -14,6 +14,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_add_ons_management.*
 import kotlinx.android.synthetic.main.fragment_add_ons_management.view.*
@@ -43,6 +44,8 @@ import java.util.concurrent.CancellationException
  */
 @Suppress("TooManyFunctions", "LargeClass")
 class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) {
+
+    private val args by navArgs<AddonsManagementFragmentArgs>()
 
     /**
      * Whether or not an add-on installation is in progress.
@@ -103,6 +106,10 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
                         if (shouldRefresh) {
                             adapter?.updateAddons(addons)
                         }
+
+
+                        // TODO check if we have args.installAddonId
+                        showPermissionDialog(addons.last())
                     }
                 }
             } catch (e: AddonManagerException) {

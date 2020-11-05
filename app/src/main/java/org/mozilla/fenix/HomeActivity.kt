@@ -239,6 +239,8 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         startupTelemetryOnCreateCalled(intent.toSafeIntent(), savedInstanceState != null)
 
         StartupTimeline.onActivityCreateEndHome(this) // DO NOT MOVE ANYTHING BELOW HERE.
+
+        components.core.requestInterceptor.navController = navHost.navController
     }
 
     protected open fun startupTelemetryOnCreateCalled(
